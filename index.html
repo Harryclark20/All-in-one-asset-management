@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Management System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-top">
+                <h1>Asset Management System</h1>
+                <button class="btn btn-primary" onclick="openAddModal()">
+                    ➕ Add Asset
+                </button>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-card stat-blue">
+                    <div class="stat-icon icon-blue">📦</div>
+                    <div>
+                        <div class="stat-label">Total Assets</div>
+                        <div class="stat-value" id="totalAssets">0</div>
+                    </div>
+                </div>
+                <div class="stat-card stat-green">
+                    <div class="stat-icon icon-green">✅</div>
+                    <div>
+                        <div class="stat-label">Active Assets</div>
+                        <div class="stat-value" id="activeAssets">0</div>
+                    </div>
+                </div>
+                <div class="stat-card stat-purple">
+                    <div class="stat-icon icon-purple">💰</div>
+                    <div>
+                        <div class="stat-label">Total Value</div>
+                        <div class="stat-value" id="totalValue">$0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <div class="filter-grid">
+                <div class="input-group">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search assets..." oninput="filterAssets()">
+                </div>
+                <select id="categoryFilter" onchange="filterAssets()">
+                    <option value="">All Categories</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Furniture">Furniture</option>
+                    <option value="Vehicles">Vehicles</option>
+                    <option value="Equipment">Equipment</option>
+                    <option value="Software">Software</option>
+                    <option value="Real Estate">Real Estate</option>
+                    <option value="Other">Other</option>
+                </select>
+                <select id="statusFilter" onchange="filterAssets()">
+                    <option value="">All Statuses</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                    <option value="Under Maintenance">Under Maintenance</option>
+                    <option value="Disposed">Disposed</option>
+                    <option value="Lost/Stolen">Lost/Stolen</option>
+                </select>
+                <button class="btn btn-secondary" onclick="exportCSV()">
+                    📥 Export CSV
+                </button>
+            </div>
+        </div>
+
+        <!-- Assets Table -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Location</th>
+                        <th>Assigned To</th>
+                        <th>Value</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="assetsTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div id="assetModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Asset</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="assetName">Asset Name *</label>
+                    <input type="text" id="assetName" required>
+                </div>
+                <div class="form-group">
+                    <label for="assetCategory">Category *</label>
+                    <select id="assetCategory" required>
+                        <option value="">Select Category</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Furniture">Furniture</option>
+                        <option value="Vehicles">Vehicles</option>
+                        <option value="Equipment">Equipment</option>
+                        <option value="Software">Software</option>
+                        <option value="Real Estate">Real Estate</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="assetStatus">Status</label>
+                    <select id="assetStatus">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                        <option value="Under Maintenance">Under Maintenance</option>
+                        <option value="Disposed">Disposed</option>
+                        <option value="Lost/Stolen">Lost/Stolen</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="serialNumber">Serial Number</label>
+                    <input type="text" id="serialNumber">
+                </div>
+                <div class="form-group">
+                    <label for="purchaseDate">Purchase Date</label>
+                    <input type="date" id="purchaseDate">
+                </div>
+                <div class="form-group">
+                    <label for="purchasePrice">Purchase Price</label>
+                    <input type="number" id="purchasePrice" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="currentValue">Current Value</label>
+                    <input type="number" id="currentValue" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <input type="text" id="location">
+                </div>
+                <div class="form-group">
+                    <label for="assignedTo">Assigned To</label>
+                    <input type="text" id="assignedTo">
+                </div>
+                <div class="form-group">
+                    <label for="warrantyExpiry">Warranty Expiry</label>
+                    <input type="date" id="warrantyExpiry">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" rows="3"></textarea>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveAsset()">Save Asset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Asset Detail Modal -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Asset Details</h2>
+                <button class="close-btn" onclick="closeDetailModal()">&times;</button>
+            </div>
+            <div id="assetDetails"></div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="editFromDetail()">Edit Asset</button>
+                <button class="btn btn-ghost" onclick="closeDetailModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
