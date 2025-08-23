@@ -2,41 +2,7 @@
         let editingAssetId = null;
         let currentDetailAsset = null;
 
-        // Initialize with sample data
-        function initializeData() {
-            assets = [
-                {
-                    id: 1,
-                    name: 'Dell Laptop XPS 13',
-                    category: 'Electronics',
-                    status: 'Active',
-                    purchaseDate: '2023-06-15',
-                    purchasePrice: 1299,
-                    currentValue: 950,
-                    location: 'Office Floor 2',
-                    assignedTo: 'John Smith',
-                    serialNumber: 'DL12345',
-                    description: 'High-performance laptop for development work',
-                    warrantyExpiry: '2026-06-15'
-                },
-                {
-                    id: 2,
-                    name: 'Conference Table',
-                    category: 'Furniture',
-                    status: 'Active',
-                    purchaseDate: '2022-03-10',
-                    purchasePrice: 800,
-                    currentValue: 600,
-                    location: 'Meeting Room A',
-                    assignedTo: '',
-                    serialNumber: 'CT001',
-                    description: '12-person conference table with cable management',
-                    warrantyExpiry: '2025-03-10'
-                }
-            ];
-            updateDisplay();
-        }
-
+    
         function updateStats() {
             const totalAssets = assets.length;
             const activeAssets = assets.filter(a => a.status === 'Active').length;
