@@ -52,20 +52,14 @@
                 <select id="categoryFilter" onchange="filterAssets()">
                     <option value="">All Categories</option>
                     <option value="Electronics">Electronics</option>
-                    <option value="Furniture">Furniture</option>
-                    <option value="Vehicles">Vehicles</option>
-                    <option value="Equipment">Equipment</option>
-                    <option value="Software">Software</option>
-                    <option value="Real Estate">Real Estate</option>
+                    <option value="Software">Software</option>   
                     <option value="Other">Other</option>
                 </select>
                 <select id="statusFilter" onchange="filterAssets()">
                     <option value="">All Statuses</option>
                     <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                    <option value="Under Maintenance">Under Maintenance</option>
-                    <option value="Disposed">Disposed</option>
-                    <option value="Lost/Stolen">Lost/Stolen</option>
+                    <option value="Inactive">In Use</option>
+                    
                 </select>
                 <button class="btn btn-secondary" onclick="exportCSV()">
                     📥 Export CSV
@@ -111,51 +105,27 @@
                     <select id="assetCategory" required>
                         <option value="">Select Category</option>
                         <option value="Electronics">Electronics</option>
-                        <option value="Furniture">Furniture</option>
-                        <option value="Vehicles">Vehicles</option>
-                        <option value="Equipment">Equipment</option>
-                        <option value="Software">Software</option>
-                        <option value="Real Estate">Real Estate</option>
-                        <option value="Other">Other</option>
+                        <option value="Projector">Projector</option>
+                        <option value="Speaker">Speaker</option>
+                        <option value="Zealot Speaker">Zealot Speaker</option>
+                        <option value="Laptop">Laptop</option>
+
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="assetStatus">Status</label>
                     <select id="assetStatus">
                         <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                        <option value="Under Maintenance">Under Maintenance</option>
-                        <option value="Disposed">Disposed</option>
-                        <option value="Lost/Stolen">Lost/Stolen</option>
+                        <option value="Inactive">In Use</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="serialNumber">Serial Number</label>
-                    <input type="text" id="serialNumber">
-                </div>
-                <div class="form-group">
-                    <label for="purchaseDate">Purchase Date</label>
-                    <input type="date" id="purchaseDate">
-                </div>
-                <div class="form-group">
-                    <label for="purchasePrice">Purchase Price</label>
-                    <input type="number" id="purchasePrice" step="0.01">
-                </div>
-                <div class="form-group">
-                    <label for="currentValue">Current Value</label>
-                    <input type="number" id="currentValue" step="0.01">
-                </div>
-                <div class="form-group">
+              <div class="form-group">
                     <label for="location">Location</label>
                     <input type="text" id="location">
                 </div>
                 <div class="form-group">
                     <label for="assignedTo">Assigned To</label>
                     <input type="text" id="assignedTo">
-                </div>
-                <div class="form-group">
-                    <label for="warrantyExpiry">Warranty Expiry</label>
-                    <input type="date" id="warrantyExpiry">
                 </div>
             </div>
             
