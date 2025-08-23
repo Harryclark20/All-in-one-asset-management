@@ -2,8 +2,11 @@
         let editingAssetId = null;
         let currentDetailAsset = null;
 
-      
-    
+
+        function updateDisplay() {
+            updateStats();
+            renderAssetsTable();
+        }
 
         function updateStats() {
             const totalAssets = assets.length;
