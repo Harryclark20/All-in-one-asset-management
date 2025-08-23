@@ -12,33 +12,27 @@
         <div class="header">
             <div class="header-top">
                 <h1>Asset Management System</h1>
-                <button class="btn btn-primary" onclick="openAddModal()">
+                <button class="btn btn-tertiary" onclick="openAddModal()">
                     ➕ Add Asset
                 </button>
             </div>
             
             <div class="stats">
-                <div class="stat-card stat-blue">
-                    <div class="stat-icon icon-blue">📦</div>
+                <div class="stat-card stat-orange">
+                    <div class="stat-icon icon-orange">📦</div>
                     <div>
                         <div class="stat-label">Total Assets</div>
                         <div class="stat-value" id="totalAssets">0</div>
                     </div>
                 </div>
-                <div class="stat-card stat-green">
-                    <div class="stat-icon icon-green">✅</div>
+                <div class="stat-card stat-red">
+                    <div class="stat-icon icon-red">✅</div>
                     <div>
                         <div class="stat-label">Active Assets</div>
                         <div class="stat-value" id="activeAssets">0</div>
                     </div>
                 </div>
-                <div class="stat-card stat-purple">
-                    <div class="stat-icon icon-purple">💰</div>
-                    <div>
-                        <div class="stat-label">Total Value</div>
-                        <div class="stat-value" id="totalValue">$0</div>
-                    </div>
-                </div>
+              
             </div>
         </div>
 
@@ -50,7 +44,6 @@
                     <input type="text" id="searchInput" class="search-input" placeholder="Search assets..." oninput="filterAssets()">
                 </div>
                 <select id="categoryFilter" onchange="filterAssets()">
-                    <option value="">All Categories</option>
                     <option value="Electronics">Electronics</option>
                     <option value="Software">Software</option>   
                     <option value="Other">Other</option>
@@ -73,11 +66,9 @@
                 <thead>
                     <tr>
                         <th>Asset</th>
-                        <th>Category</th>
                         <th>Status</th>
-                        <th>Location</th>
                         <th>Assigned To</th>
-                        <th>Value</th>
+                        <th>Location</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -100,18 +91,7 @@
                     <label for="assetName">Asset Name *</label>
                     <input type="text" id="assetName" required>
                 </div>
-                <div class="form-group">
-                    <label for="assetCategory">Category *</label>
-                    <select id="assetCategory" required>
-                        <option value="">Select Category</option>
-                        <option value="Electronics">Electronics</option>
-                        <option value="Projector">Projector</option>
-                        <option value="Speaker">Speaker</option>
-                        <option value="Zealot Speaker">Zealot Speaker</option>
-                        <option value="Laptop">Laptop</option>
-
-                    </select>
-                </div>
+                
                 <div class="form-group">
                     <label for="assetStatus">Status</label>
                     <select id="assetStatus">

@@ -1,260 +1,258 @@
-        let assets = [];
-        let editingAssetId = null;
-        let currentDetailAsset = null;
+// ===== STATE =====
+let assets = [];
+let editingAssetId = null;
+let currentDetailAsset = null;
 
-    
-        function updateStats() {
-            const totalAssets = assets.length;
-            const activeAssets = assets.filter(a => a.status === 'Active').length;
-            const totalValue = assets.reduce((sum, a) => sum + (a.currentValue || 0), 0);
+// ===== HELPERS (null-safe) =====
+const el = (id) => document.getElementById(id);
+const val = (id) => (el(id) ? el(id).value : "");
+const setVal = (id, v = "") => { if (el(id)) el(id).value = v; };
+const num = (id) => {
+  const n = parseFloat(val(id));
+  return isNaN(n) ? 0 : n;
+};
 
-            document.getElementById('totalAssets').textContent = totalAssets;
-            document.getElementById('activeAssets').textContent = activeAssets;
-            document.getElementById('totalValue').textContent = '$' + totalValue.toLocaleString();
-        }
+// ===== STATS =====
+function updateStats() {
+  const totalAssets = assets.length;
+  const activeAssets = assets.filter(a => (a.status || "") === "Active").length;
+  const totalValue = assets.reduce((sum, a) => sum + (Number(a.currentValue) || 0), 0);
 
-        function renderAssetsTable() {
-            const tbody = document.getElementById('assetsTableBody');
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const categoryFilter = document.getElementById('categoryFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
+  el('totalAssets').textContent = totalAssets;
+  el('activeAssets').textContent = activeAssets;
+  el('totalValue').textContent = '$' + totalValue.toLocaleString();
+}
 
-            const filteredAssets = assets.filter(asset => {
-                const matchesSearch = asset.name.toLowerCase().includes(searchTerm) ||
-                                    asset.serialNumber.toLowerCase().includes(searchTerm) ||
-                                    asset.assignedTo.toLowerCase().includes(searchTerm);
-                const matchesCategory = !categoryFilter || asset.category === categoryFilter;
-                const matchesStatus = !statusFilter || asset.status === statusFilter;
-                return matchesSearch && matchesCategory && matchesStatus;
-            });
+// ===== TABLE RENDER =====
+function renderAssetsTable() {
+  const tbody = el('assetsTableBody');
+  if (!tbody) return;
 
-            tbody.innerHTML = filteredAssets.map(asset => `
-                <tr>
-                    <td>
-                        <div>
-                            <div style="font-weight: 500;">${asset.name}</div>
-                            <div style="font-size: 0.875rem; color: #6b7280;">S/N: ${asset.serialNumber}</div>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="badge badge-blue">${asset.category}</span>
-                    </td>
-                    <td>
-                        <span class="badge ${getStatusBadgeClass(asset.status)}">${asset.status}</span>
-                    </td>
-                    <td>${asset.location || 'N/A'}</td>
-                    <td>${asset.assignedTo || 'Unassigned'}</td>
-                    <td>$${(asset.currentValue || 0).toLocaleString()}</td>
-                    <td>
-                        <div class="actions">
-                            <button class="action-btn" onclick="viewAsset(${asset.id})" title="View">👁️</button>
-                            <button class="action-btn" onclick="editAsset(${asset.id})" title="Edit">✏️</button>
-                            <button class="btn-danger" onclick="deleteAsset(${asset.id})" title="Delete">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-        }
+  const searchTerm = (el('searchInput')?.value || "").toLowerCase();
+  const categoryFilter = el('categoryFilter')?.value || "";
+  const statusFilter = el('statusFilter')?.value || "";
 
-        function getStatusBadgeClass(status) {
-            switch(status) {
-                case 'Active': return 'badge-green';
-                case 'Under Maintenance': return 'badge-yellow';
-                default: return 'badge-red';
-            }
-        }
+  const filteredAssets = assets.filter(asset => {
+    const matchesSearch =
+      (asset.name || "").toLowerCase().includes(searchTerm) ||
+      (asset.serialNumber || "").toLowerCase().includes(searchTerm) ||
+      (asset.assignedTo || "").toLowerCase().includes(searchTerm) ||
+      (asset.location || "").toLowerCase().includes(searchTerm);
 
-        function updateDisplay() {
-            updateStats();
-            renderAssetsTable();
-        }
+    const matchesCategory = !categoryFilter || asset.category === categoryFilter;
+    const matchesStatus = !statusFilter || asset.status === statusFilter;
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
 
-        function filterAssets() {
-            renderAssetsTable();
-        }
+  tbody.innerHTML = filteredAssets.map(asset => `
+    <tr>
+      <td>
+        <div>
+          <div style="font-weight: 500;">${asset.name || ''}</div>
+          <div style="font-size: 0.875rem; color: #6b7280;">
+            ${asset.serialNumber ? `S/N: ${asset.serialNumber}` : ''}</div>
+        </div>
+      </td>
+      <td><span class="badge badge-blue">${asset.category || ''}</span></td>
+      <td><span class="badge ${getStatusBadgeClass(asset.status)}">${asset.status || ''}</span></td>
+      <td>${asset.location || 'N/A'}</td>
+      <td>${asset.assignedTo || 'Unassigned'}</td>
+      <td>$${Number(asset.currentValue || 0).toLocaleString()}</td>
+      <td>
+        <div class="actions">
+          <button class="action-btn" onclick="viewAsset(${asset.id})" title="View">👁️</button>
+          <button class="action-btn" onclick="editAsset(${asset.id})" title="Edit">✏️</button>
+          <button class="btn-danger" onclick="deleteAsset(${asset.id})" title="Delete">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
 
-        function openAddModal() {
-            editingAssetId = null;
-            document.getElementById('modalTitle').textContent = 'Add New Asset';
-            clearForm();
-            document.getElementById('assetModal').classList.add('active');
-        }
+function getStatusBadgeClass(status) {
+  switch (status) {
+    case 'Active': return 'badge-green';
+    case 'Under Maintenance': return 'badge-yellow';
+    default: return 'badge-red';
+  }
+}
 
-        function editAsset(id) {
-            const asset = assets.find(a => a.id === id);
-            if (!asset) return;
+function updateDisplay() {
+  updateStats();
+  renderAssetsTable();
+}
 
-            editingAssetId = id;
-            document.getElementById('modalTitle').textContent = 'Edit Asset';
-            
-            // Populate form
-            document.getElementById('assetName').value = asset.name || '';
-            document.getElementById('assetCategory').value = asset.category || '';
-            document.getElementById('assetStatus').value = asset.status || '';
-            document.getElementById('serialNumber').value = asset.serialNumber || '';
-            document.getElementById('purchaseDate').value = asset.purchaseDate || '';
-            document.getElementById('purchasePrice').value = asset.purchasePrice || '';
-            document.getElementById('currentValue').value = asset.currentValue || '';
-            document.getElementById('location').value = asset.location || '';
-            document.getElementById('assignedTo').value = asset.assignedTo || '';
-            document.getElementById('warrantyExpiry').value = asset.warrantyExpiry || '';
-            document.getElementById('description').value = asset.description || '';
+function filterAssets() {
+  renderAssetsTable();
+}
 
-            document.getElementById('assetModal').classList.add('active');
-        }
+// ===== MODALS =====
+function openAddModal() {
+  editingAssetId = null;
+  el('modalTitle').textContent = 'Add New Asset';
+  clearForm();
+  el('assetModal')?.classList.add('active');
+}
 
-        function viewAsset(id) {
-            const asset = assets.find(a => a.id === id);
-            if (!asset) return;
+function closeModal() {
+  el('assetModal')?.classList.remove('active');
+}
 
-            currentDetailAsset = asset;
-            const detailsHTML = `
-                <div class="form-grid">
-                    <div><strong>Asset Name:</strong> ${asset.name}</div>
-                    <div><strong>Serial Number:</strong> ${asset.serialNumber || 'N/A'}</div>
-                    <div><strong>Category:</strong> <span class="badge badge-blue">${asset.category}</span></div>
-                    <div><strong>Status:</strong> <span class="badge ${getStatusBadgeClass(asset.status)}">${asset.status}</span></div>
-                    <div><strong>Location:</strong> ${asset.location || 'N/A'}</div>
-                    <div><strong>Assigned To:</strong> ${asset.assignedTo || 'Unassigned'}</div>
-                    <div><strong>Purchase Date:</strong> ${asset.purchaseDate || 'N/A'}</div>
-                    <div><strong>Purchase Price:</strong> $${(asset.purchasePrice || 0).toLocaleString()}</div>
-                    <div><strong>Current Value:</strong> $${(asset.currentValue || 0).toLocaleString()}</div>
-                    <div><strong>Warranty Expiry:</strong> ${asset.warrantyExpiry || 'N/A'}</div>
-                </div>
-                ${asset.description ? `<div style="margin-top: 1rem;"><strong>Description:</strong><br><div style="background: #f9fafb; padding: 1rem; border-radius: 8px; margin-top: 0.5rem;">${asset.description}</div></div>` : ''}
-            `;
-            
-            document.getElementById('assetDetails').innerHTML = detailsHTML;
-            document.getElementById('detailModal').classList.add('active');
-        }
+function closeDetailModal() {
+  el('detailModal')?.classList.remove('active');
+}
 
-        function editFromDetail() {
-            closeDetailModal();
-            editAsset(currentDetailAsset.id);
-        }
+// ===== CRUD =====
+function clearForm() {
+  // Works even if some inputs are not in your HTML
+  ['assetName','assetStatus','serialNumber','purchaseDate',
+   'purchasePrice','currentValue','location','assignedTo','warrantyExpiry','description']
+   .forEach(id => setVal(id, ''));
 
-        function deleteAsset(id) {
-            if (confirm('Are you sure you want to delete this asset?')) {
-                assets = assets.filter(a => a.id !== id);
-                updateDisplay();
-            }
-        }
+  setVal('assetStatus', 'Active');
+}
 
-        function saveAsset() {
-            const name = document.getElementById('assetName').value;
-            const category = document.getElementById('assetCategory').value;
-            
-            if (!name || !category) {
-                alert('Please fill in required fields (Asset Name and Category)');
-                return;
-            }
+function saveAsset() {
+  const name = val('assetName');
 
-            const assetData = {
-                name,
-                category,
-                status: document.getElementById('assetStatus').value,
-                serialNumber: document.getElementById('serialNumber').value,
-                purchaseDate: document.getElementById('purchaseDate').value,
-                purchasePrice: parseFloat(document.getElementById('purchasePrice').value) || 0,
-                currentValue: parseFloat(document.getElementById('currentValue').value) || 0,
-                location: document.getElementById('location').value,
-                assignedTo: document.getElementById('assignedTo').value,
-                warrantyExpiry: document.getElementById('warrantyExpiry').value,
-                description: document.getElementById('description').value
-            };
+  if (!name) {
+    alert('Please fill in required fields (Asset Name)');
+    return;
+  }
 
-            if (editingAssetId) {
-                // Update existing asset
-                const index = assets.findIndex(a => a.id === editingAssetId);
-                if (index !== -1) {
-                    assets[index] = { ...assetData, id: editingAssetId };
-                }
-            } else {
-                // Add new asset
-                assetData.id = Date.now();
-                assets.push(assetData);
-            }
+  const assetData = {
+    id: editingAssetId || Date.now(),
+    name,
+    category,
+    status: val('assetStatus') || 'Active',
+    serialNumber: val('serialNumber'),           // may be empty (safe)
+    purchaseDate: val('purchaseDate'),           // may be empty (safe)
+    purchasePrice: num('purchasePrice'),         // default 0 if missing
+    currentValue: num('currentValue'),           // default 0 if missing
+    location: val('location'),
+    assignedTo: val('assignedTo'),
+    warrantyExpiry: val('warrantyExpiry'),
+    description: val('description')
+  };
 
-            closeModal();
-            updateDisplay();
-        }
+  if (editingAssetId) {
+    const i = assets.findIndex(a => a.id === editingAssetId);
+    if (i !== -1) assets[i] = assetData;
+  } else {
+    assets.push(assetData);
+  }
 
-        function clearForm() {
-            document.getElementById('assetName').value = '';
-            document.getElementById('assetCategory').value = '';
-            document.getElementById('assetStatus').value = 'Active';
-            document.getElementById('serialNumber').value = '';
-            document.getElementById('purchaseDate').value = '';
-            document.getElementById('purchasePrice').value = '';
-            document.getElementById('currentValue').value = '';
-            document.getElementById('location').value = '';
-            document.getElementById('assignedTo').value = '';
-            document.getElementById('warrantyExpiry').value = '';
-            document.getElementById('description').value = '';
-        }
+  closeModal();
+  updateDisplay();
+}
 
-        function closeModal() {
-            document.getElementById('assetModal').classList.remove('active');
-        }
+function editAsset(id) {
+  const asset = assets.find(a => a.id === id);
+  if (!asset) return;
 
-        function closeDetailModal() {
-            document.getElementById('detailModal').classList.remove('active');
-        }
+  editingAssetId = id;
+  el('modalTitle').textContent = 'Edit Asset';
 
-        function exportCSV() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const categoryFilter = document.getElementById('categoryFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
+  setVal('assetName', asset.name || '');
+  setVal('assetStatus', asset.status || 'Active');
+  setVal('serialNumber', asset.serialNumber || '');
+  setVal('purchaseDate', asset.purchaseDate || '');
+  setVal('purchasePrice', asset.purchasePrice ?? '');
+  setVal('currentValue', asset.currentValue ?? '');
+  setVal('location', asset.location || '');
+  setVal('assignedTo', asset.assignedTo || '');
+  setVal('warrantyExpiry', asset.warrantyExpiry || '');
+  setVal('description', asset.description || '');
 
-            const filteredAssets = assets.filter(asset => {
-                const matchesSearch = asset.name.toLowerCase().includes(searchTerm) ||
-                                    asset.serialNumber.toLowerCase().includes(searchTerm) ||
-                                    asset.assignedTo.toLowerCase().includes(searchTerm);
-                const matchesCategory = !categoryFilter || asset.category === categoryFilter;
-                const matchesStatus = !statusFilter || asset.status === statusFilter;
-                return matchesSearch && matchesCategory && matchesStatus;
-            });
+  el('assetModal')?.classList.add('active');
+}
 
-            const headers = ['Name', 'Category', 'Status', 'Purchase Date', 'Purchase Price', 'Current Value', 'Location', 'Assigned To', 'Serial Number'];
-            const csvData = [
-                headers.join(','),
-                ...filteredAssets.map(asset => [
-                    asset.name,
-                    asset.category,
-                    asset.status,
-                    asset.purchaseDate,
-                    asset.purchasePrice,
-                    asset.currentValue,
-                    asset.location,
-                    asset.assignedTo,
-                    asset.serialNumber
-                ].join(','))
-            ].join('\n');
+function viewAsset(id) {
+  const asset = assets.find(a => a.id === id);
+  if (!asset) return;
 
-            const blob = new Blob([csvData], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'assets.csv';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        }
+  currentDetailAsset = asset;
+  el('assetDetails').innerHTML = `
+    <div class="form-grid">
+      <div><strong>Asset Name:</strong> ${asset.name || ''}</div>
+      <div><strong>Serial Number:</strong> ${asset.serialNumber || 'N/A'}</div>
+      <div><strong>Status:</strong> <span class="badge ${getStatusBadgeClass(asset.status)}">${asset.status || ''}</span></div>
+      <div><strong>Location:</strong> ${asset.location || 'N/A'}</div>
+      <div><strong>Assigned To:</strong> ${asset.assignedTo || 'Unassigned'}</div>
+      <div><strong>Purchase Date:</strong> ${asset.purchaseDate || 'N/A'}</div>
+      <div><strong>Purchase Price:</strong> $${Number(asset.purchasePrice || 0).toLocaleString()}</div>
+      <div><strong>Current Value:</strong> $${Number(asset.currentValue || 0).toLocaleString()}</div>
+      <div><strong>Warranty Expiry:</strong> ${asset.warrantyExpiry || 'N/A'}</div>
+    </div>
+    ${asset.description ? `<div style="margin-top: 1rem;"><strong>Description:</strong><br><div style="background: #f9fafb; padding: 1rem; border-radius: 8px; margin-top: 0.5rem;">${asset.description}</div></div>` : ''}
+  `;
+  el('detailModal')?.classList.add('active');
+}
 
-        // Close modals when clicking outside
-        document.addEventListener('click', function(e) {
-            const modal = document.getElementById('assetModal');
-            const detailModal = document.getElementById('detailModal');
-            
-            if (e.target === modal) {
-                closeModal();
-            }
-            if (e.target === detailModal) {
-                closeDetailModal();
-            }
-        });
+function editFromDetail() {
+  closeDetailModal();
+  if (currentDetailAsset) editAsset(currentDetailAsset.id);
+}
 
-        // Initialize the app
-        document.addEventListener('DOMContentLoaded', initializeData);
-    
+function deleteAsset(id) {
+  if (confirm('Are you sure you want to delete this asset?')) {
+    assets = assets.filter(a => a.id !== id);
+    updateDisplay();
+  }
+}
+
+// ===== EXPORT =====
+function exportCSV() {
+  const searchTerm = (el('searchInput')?.value || "").toLowerCase();
+  const statusFilter = el('statusFilter')?.value || "";
+
+  const filteredAssets = assets.filter(asset => {
+    const matchesSearch =
+      (asset.name || "").toLowerCase().includes(searchTerm) ||
+      (asset.serialNumber || "").toLowerCase().includes(searchTerm) ||
+      (asset.assignedTo || "").toLowerCase().includes(searchTerm);
+    const matchesStatus = !statusFilter || asset.status === statusFilter;
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
+
+  const headers = ['Name','Category','Status','Purchase Date','Purchase Price','Current Value','Location','Assigned To','Serial Number','Description'];
+  const csvData = [
+    headers.join(','),
+    ...filteredAssets.map(a => [
+      (a.name || ''),
+      (a.status || ''),
+      (a.purchaseDate || ''),
+      Number(a.purchasePrice || 0),
+      Number(a.currentValue || 0),
+      (a.location || ''),
+      (a.assignedTo || ''),
+      (a.serialNumber || ''),
+      (a.description || '').replace(/\n/g,' ').replace(/,/g,';')
+    ].join(','))
+  ].join('\n');
+
+  const blob = new Blob([csvData], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'assets.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ===== CLICK OUTSIDE TO CLOSE =====
+document.addEventListener('click', (e) => {
+  const modal = el('assetModal');
+  const detailModal = el('detailModal');
+  if (e.target === modal) closeModal();
+  if (e.target === detailModal) closeDetailModal();
+});
+
+// ===== BOOT =====
+document.addEventListener('DOMContentLoaded', () => {
+  // Optional: seed example to test
+  // assets.push({ id: Date.now(), name: 'HP Laptop', category: 'Electronics', status: 'Active', location: 'Admin Office', assignedTo: 'Chidi', currentValue: 250000 });
+  updateDisplay();
+});
